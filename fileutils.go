@@ -21,7 +21,7 @@ type Folder struct {
 	FullPath   string
 	Parent     *Folder
 	SubFolders []*Folder
-	Files      []File
+	Files      []*File
 }
 
 // FileFilter is a function which can be used to filter various files in the ReadFolderContent function
@@ -65,10 +65,9 @@ func (f *Folder) traverseContent(fileFilter FileFilter) error {
 				return err
 			}
 		case mode.IsRegular():
-			if fileFilter == nil {
-				f.Files = append(f.Files, File{Name: fi.Name(), FullPath: fullPath})
-			} else if fileFilter(fi) {
-				f.Files = append(f.Files, File{Name: fi.Name(), FullPath: fullPath})
+			if fileFilter == nil || fileFilter(fi) {
+				file := newFile(fi.Name(), fullPath)
+				f.Files = append(f.Files, file)
 			}
 		}
 	}
@@ -77,4 +76,8 @@ func (f *Folder) traverseContent(fileFilter FileFilter) error {
 
 func newFolder(name, fullPath string, parentFolder *Folder) *Folder {
 	return &Folder{Name: name, FullPath: fullPath, Parent: parentFolder}
+}
+
+func newFile(name, fullPath string) *File {
+	return &File{Name: name, FullPath: fullPath}
 }
